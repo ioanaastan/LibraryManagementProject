@@ -23,7 +23,7 @@ namespace LibraryManagement.Api.Controllers
         /// </summary>
         /// <returns>A collection of books with their borrowing records</returns>
         /// <response code="200">Returns the list of books with borrowing records</response>
-        [HttpGet]
+        [HttpGet("all")]  // <- Add route template here
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<BookWithBorrowingsDto>>> GetAllBooks()
         {
@@ -51,6 +51,53 @@ namespace LibraryManagement.Api.Controllers
             }
 
             return Ok(book);
+        }
+
+        /// <summary>
+        /// Gets filtered books with pagination and sorting
+        /// </summary>
+        [HttpGet("filter")]  // <- Add route template here
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<PagedResult<BookWithBorrowingsDto>>> GetBooks(
+            [FromQuery] string? title = null,
+            [FromQuery] string? author = null,
+            [FromQuery] string? genre = null,
+            [FromQuery] int? minYear = null,
+            [FromQuery] int? maxYear = null,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = null,
+            [FromQuery] bool ascending = true)
+        {
+            var (books, totalCount) = await _bookService.GetFilteredBooksAsync(
+                title, author, genre, minYear, maxYear, pageNumber, pageSize, sortBy, ascending);
+
+            var result = new PagedResult<BookWithBorrowingsDto>
+            {
+                Items = books,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Updates a book by ID
+        /// </summary>
+        /// <param name="id">The ID of the book to update</param>
+        /// <param name="updateDto">The update information</param>
+        /// <returns>The updated book</returns>
+        /// <response code="200">Returns the updated book</response>
+        /// <response code="404">If the book is not found</response>
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<BookWithBorrowingsDto>> UpdateBook(int id, [FromBody] BookUpdateDto updateDto)
+        {
+            var updatedBook = await _bookService.UpdateBookAsync(id, updateDto);
+            return Ok(updatedBook);
         }
     }
 }
