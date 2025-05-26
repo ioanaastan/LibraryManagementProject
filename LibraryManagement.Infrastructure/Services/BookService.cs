@@ -61,5 +61,32 @@ namespace LibraryManagement.Infrastructure.Services
                 }).ToList() ?? new List<BorrowingRecordDto>()
             };
         }
+
+        public async Task<(IEnumerable<BookWithBorrowingsDto> Books, int TotalCount)> GetFilteredBooksAsync(
+        string? title = null,
+        string? author = null,
+        string? genre = null,
+        int? minYear = null,
+        int? maxYear = null,
+        int pageNumber = 1,
+        int pageSize = 10,
+        string? sortBy = null,
+        bool ascending = true)
+        {
+            var (books, totalCount) = await _bookRepository.GetFilteredBooksAsync(
+                title, author, genre, minYear, maxYear, pageNumber, pageSize, sortBy, ascending);
+
+            return (books.Select(MapToBookWithBorrowingsDto), totalCount);
+        }
+
+        public async Task<BookWithBorrowingsDto?> UpdateBookAsync(int id, BookUpdateDto updateDto)
+        {
+            var book = await _bookRepository.UpdateBookAsync(id, updateDto);
+
+            if (book == null)
+                throw new BookNotFoundException(id);
+
+            return MapToBookWithBorrowingsDto(book);
+        }
     }
 }

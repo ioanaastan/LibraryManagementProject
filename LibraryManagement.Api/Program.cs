@@ -6,6 +6,8 @@ using LibraryManagement.Database.Repositories;
 using LibraryManagement.Infrastructure.Services;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using LibraryManagement.Api.Middleware;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandling();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
